@@ -269,7 +269,7 @@
     font-family: monospace; font-size: 12px; letter-spacing: 7px;
     color: var(--text-dim); text-transform: uppercase; margin-bottom: 40px;
   }
-  .title-tag { font-size: 26px; color: var(--text-sec); font-weight: 300; max-width: 760px; }
+  .title-tag { font-size: 26px; color: var(--text-sec); font-weight: 300; max-width: 760px; margin: 0 auto; }
   .title-tag b { color: var(--text); font-weight: 600; }
   .title-meta {
     margin-top: 44px; font-family: monospace; font-size: 13px;
@@ -294,32 +294,71 @@
   .pillar .pn { font-family: monospace; font-size: 11px; letter-spacing: 2px; color: var(--text-dim); }
   .pillar .pt { font-size: 22px; color: var(--teal); font-weight: 600; margin: 8px 0 8px; }
 
-  /* ── crew roster ── */
-  .roster { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 26px; }
+  /* ── glowing kanji icon (replaces emoji — colour set per-card inline) ── */
+  .kanji-ico {
+    font-family: 'Noto Serif JP', serif; font-weight: 700;
+    font-size: 32px; line-height: 1; display: block; margin-bottom: 12px;
+    color: var(--teal); text-shadow: 0 0 18px currentColor;
+  }
+
+  /* ── crew roster — glyph-forward operative cards ── */
+  .roster { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 22px; }
   .op {
-    position: relative; overflow: hidden; border-radius: 10px;
-    background: var(--bg-card); border: 1px solid var(--border);
-    padding: 18px 18px 16px; min-height: 150px;
+    --c: var(--op-mei); --c-soft: rgba(0,255,224,0.15);
+    position: relative; overflow: hidden; isolation: isolate; text-align: center;
+    border: 1px solid var(--border); border-radius: 14px; padding: 15px 14px 16px;
+    background:
+      radial-gradient(120% 70% at 50% -10%, var(--c-soft) 0%, transparent 55%),
+      linear-gradient(180deg, #15231f 0%, #0d1815 100%);
+    transition: border-color .25s, box-shadow .25s;
   }
-  .op .op-wm {
-    position: absolute; right: -8px; bottom: -26px;
-    font-family: 'Noto Serif JP', serif; font-weight: 700; font-size: 96px;
-    opacity: 0.14; line-height: 1; pointer-events: none;
+  .op::after {   /* glowing accent strip along the top edge */
+    content: ''; position: absolute; top: 0; left: 14px; right: 14px; height: 2px;
+    background: var(--c); box-shadow: 0 0 16px 1px var(--c); border-radius: 0 0 2px 2px;
   }
-  .op .op-id { font-family: monospace; font-size: 11px; letter-spacing: 1px; color: var(--text-dim); }
-  .op .op-name { font-size: 21px; font-weight: 700; margin: 4px 0 2px; }
-  .op .op-role { font-family: monospace; font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); }
-  .op .op-line { font-size: 13px; color: var(--text-sec); margin-top: 11px; line-height: 1.5; position: relative; z-index: 2; }
-  .op.mei   { --c: var(--op-mei); }
-  .op.ren   { --c: var(--op-ren); }
-  .op.haku  { --c: var(--op-haku); }
-  .op.ryu   { --c: var(--op-ryu); }
-  .op.cho   { --c: var(--op-cho); }
-  .op.sumi  { --c: var(--op-sumi); }
-  .op.toshi { --c: var(--op-toshi); }
-  .op { border-top: 2px solid var(--c); }
-  .op .op-name { color: var(--c); }
-  .op .op-wm  { color: var(--c); }
+  .op::before {  /* faint oversized kanji echo behind the bright glyph */
+    content: attr(data-glyph); position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    font-family: 'Noto Serif JP', serif; font-weight: 700; font-size: 124px; line-height: 1;
+    color: var(--c); opacity: 0.07; pointer-events: none; z-index: -1;
+  }
+  .op .op-head { display: flex; align-items: center; justify-content: space-between; }
+  .op .op-id { font-family: monospace; font-size: 10px; letter-spacing: .24em; color: var(--c); }
+  .op .op-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px 1px var(--c); }
+  .op .op-glyph { font-family: 'Noto Serif JP', serif; font-weight: 700; font-size: 50px; line-height: 1;
+                  color: var(--c); text-shadow: 0 0 22px var(--c); margin: 9px 0 7px; }
+  .op .op-name { font-family: 'Noto Serif JP', serif; font-size: 22px; font-weight: 700; color: #eef7f4; line-height: 1; }
+  .op .op-role { font-family: monospace; font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--c); margin-top: 8px; }
+  .op .op-meaning { font-size: 11px; color: var(--text-dim); font-style: italic; margin-top: 7px; }
+  .op.mei  {--c:var(--op-mei);  --c-soft:rgba(0,255,224,0.15)}
+  .op.ren  {--c:var(--op-ren);  --c-soft:rgba(167,139,250,0.18)}
+  .op.haku {--c:var(--op-haku); --c-soft:rgba(52,211,153,0.16)}
+  .op.ryu  {--c:var(--op-ryu);  --c-soft:rgba(240,165,0,0.16)}
+  .op.cho  {--c:var(--op-cho);  --c-soft:rgba(56,189,248,0.16)}
+  .op.sumi {--c:var(--op-sumi); --c-soft:rgba(154,168,181,0.14)}
+  .op.toshi{--c:var(--op-toshi);--c-soft:rgba(143,217,255,0.16)}
+  .op.grow { --c: var(--text-dim); background: var(--bg-card); border-style: dashed;
+             display: flex; align-items: center; justify-content: center; }
+  .op.grow::after, .op.grow::before { display: none; }
+
+  /* ── operative duo (Chō / Sumi spotlight) ── */
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 26px; }
+  .opwide {
+    --c: var(--op-cho); --c-soft: rgba(56,189,248,0.16);
+    position: relative; overflow: hidden; isolation: isolate;
+    display: flex; align-items: center; gap: 22px;
+    border: 1px solid var(--border); border-radius: 14px; padding: 24px 26px;
+    background:
+      radial-gradient(90% 130% at 0% 0%, var(--c-soft) 0%, transparent 55%),
+      linear-gradient(180deg, #15231f 0%, #0d1815 100%);
+  }
+  .opwide::after { content:''; position:absolute; top:16px; bottom:16px; left:0; width:2px;
+                   background:var(--c); box-shadow:0 0 16px 1px var(--c); }
+  .opwide .g { font-family:'Noto Serif JP',serif; font-weight:700; font-size:82px; line-height:1;
+               color:var(--c); text-shadow:0 0 26px var(--c); flex:0 0 auto; }
+  .opwide .who { font-family:monospace; font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--c); }
+  .opwide h3 { font-size:19px; color:var(--text); margin:5px 0 7px; font-weight:600; }
+  .opwide p { font-size:13.5px; color:var(--text-muted); line-height:1.55; }
+  .opwide.sumi { --c: var(--op-sumi); --c-soft: rgba(154,168,181,0.14); }
 
   /* ── operative anatomy ── */
   .anatomy { display: flex; align-items: stretch; gap: 14px; margin-top: 30px; flex-wrap: wrap; }
@@ -408,22 +447,30 @@
   .step .sp { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; }
   .step-arrow { align-self: center; flex: 0 0 38px; text-align: center; color: var(--text-dim); font-size: 20px; }
 
-  /* ── roadmap ── */
-  .road { margin-top: 26px; display: grid; gap: 12px; }
-  .rrow { display: grid; grid-template-columns: 64px 150px 1fr; gap: 18px; align-items: center;
-          background: var(--bg-card); border: 1px solid var(--border); border-radius: 9px; padding: 14px 18px; }
-  .rrow .rv { font-family: monospace; font-size: 15px; color: var(--teal); font-weight: 700; }
-  .rrow .rt { font-size: 16px; color: var(--text); font-weight: 600; }
-  .rrow .rd { font-size: 13.5px; color: var(--text-muted); }
-  .rrow .rtag { font-family: monospace; font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase;
-                padding: 2px 7px; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
-  .rtag.now  { color: var(--green);   border: 1px solid var(--green); }
-  .rtag.next { color: var(--teal);    border: 1px solid var(--teal); }
-  .rtag.plan { color: var(--text-dim); border: 1px solid var(--border); }
+  /* ── roadmap — shipped wall + next ── */
+  .road-wrap { display: grid; grid-template-columns: 1.55fr 1fr; gap: 22px; margin-top: 22px; align-items: start; }
+  .road-col-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+  .road-col-head .lbl { font-family: monospace; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; }
+  .road-col-head .cnt { font-family: monospace; font-size: 12px; color: var(--text-dim); }
+  .ship-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+  .ship { display: grid; grid-template-columns: 46px 1fr; gap: 10px; align-items: baseline; padding: 5px 0;
+          border-bottom: 1px solid var(--border-sub); }
+  .ship .sv { font-family: monospace; font-size: 12px; color: var(--green); font-weight: 700; }
+  .ship .st { font-size: 13.5px; color: var(--text-sec); line-height: 1.35; }
+  .ship .st::before { content: '✓ '; color: var(--green); font-weight: 700; }
+  .next-list { display: grid; gap: 12px; }
+  .nrow { position: relative; border: 1px solid var(--border); border-left: 3px solid var(--c, var(--teal));
+          border-radius: 9px; padding: 13px 16px; background: var(--bg-card); }
+  .nrow .nv { font-family: monospace; font-size: 11px; letter-spacing: 1px; color: var(--c, var(--teal)); }
+  .nrow .nt { font-size: 16px; color: var(--text); font-weight: 600; margin: 3px 0 4px; }
+  .nrow .nd { font-size: 13px; color: var(--text-muted); line-height: 1.45; }
+  .nrow.next { --c: var(--teal); }
+  .nrow.plan { --c: var(--amber); }
+  .nrow.horizon { --c: var(--crimson); }
 
   /* ── close slide ── */
   .close-slide { align-items: center; text-align: center; }
-  .close-quote { font-size: 28px; color: var(--text-sec); font-weight: 300; max-width: 860px; line-height: 1.45; font-style: italic; }
+  .close-quote { font-size: 28px; color: var(--text-sec); font-weight: 300; max-width: 860px; margin: 0 auto; line-height: 1.45; font-style: italic; }
   .close-quote b { color: var(--teal); font-style: normal; font-weight: 600; }
   .close-mark { font-family: 'Noto Serif JP', serif; font-size: 90px; font-weight: 700; color: var(--crimson); text-shadow: var(--crimson-glow); margin: 30px 0 10px; }
   .close-sign { font-family: monospace; font-size: 13px; color: var(--text-muted); letter-spacing: 2px; }
@@ -481,9 +528,9 @@
         <h2 class="head stagger">WebCenter is powerful. The work <span class="crim">around</span> it is heavy.<span class="jp-tag">日常業務</span></h2>
         <p class="lead stagger">The platform does a lot. But the daily reality is repetitive, knowledge-heavy, and easy to lose track of.</p>
         <div class="grid g3 stagger">
-          <div class="card"><span class="ico">🔁</span><h3>Repetition</h3><p>The same scripts, the same lookups, the same documentation — rebuilt by hand, project after project.</p></div>
-          <div class="card"><span class="ico">🧠</span><h3>Knowledge in heads</h3><p>The right JSP call, the right API for the right context — known by a few, written down by fewer.</p></div>
-          <div class="card"><span class="ico">🌙</span><h3>No after-hours</h3><p>Batch work, audits, and write-ups wait for a person with time. Nothing runs on its own.</p></div>
+          <div class="card"><span class="kanji-ico" style="color:var(--crimson)">繰</span><h3>Repetition</h3><p>The same scripts, the same lookups, the same documentation — rebuilt by hand, project after project.</p></div>
+          <div class="card"><span class="kanji-ico" style="color:var(--crimson)">知</span><h3>Knowledge in heads</h3><p>The right JSP call, the right API for the right context — known by a few, written down by fewer.</p></div>
+          <div class="card"><span class="kanji-ico" style="color:var(--crimson)">夜</span><h3>No after-hours</h3><p>Batch work, audits, and write-ups wait for a person with time. Nothing runs on its own.</p></div>
         </div>
         <p class="lead stagger" style="margin-top:26px;">What if every one of those tasks had a <span class="hi">specialist who never forgets</span> — and works while you sleep?</p>
       </div>
@@ -497,7 +544,7 @@
         <p class="lead stagger">Kage-gumi is a team of AI <span class="hi">operatives</span> — each one given a single job, its own knowledge, and real reach into the systems we use every day.</p>
         <div class="grid g3 stagger">
           <div class="card pillar"><div class="pn">01</div><div class="pt">Specialised</div><p>Every operative is an expert in exactly one thing. No jack-of-all-trades. Depth over breadth.</p></div>
-          <div class="card pillar"><div class="pn">02</div><div class="pt">Connected</div><p>They don't just talk — they reach into WebCenter, the browser, Miro, and DevOps and change real state.</p></div>
+          <div class="card pillar"><div class="pn">02</div><div class="pt">Connected</div><p>They don't just talk — they reach into WebCenter, the browser, and Miro and change real state.</p></div>
           <div class="card pillar"><div class="pn">03</div><div class="pt">Autonomous</div><p>Tasks route to the right operative, run in the background, and report back. Some run overnight, unattended.</p></div>
         </div>
       </div>
@@ -509,16 +556,14 @@
         <div class="kicker stagger">The operatives</div>
         <h2 class="head stagger">Meet the crew<span class="jp-tag">影組メンバー</span></h2>
         <div class="roster stagger">
-          <div class="op mei">   <span class="op-wm">明</span><div class="op-id">KG-01</div><div class="op-name">Mei</div><div class="op-role">Support · WebCenter</div><div class="op-line">Knows the full SDK. Ask in plain language, get working answers.</div></div>
-          <div class="op ren">   <span class="op-wm">錬</span><div class="op-id">KG-02</div><div class="op-name">Ren</div><div class="op-role">Builder · Scripts</div><div class="op-line">Generates scripts &amp; UI — versioned, diffable, pushed live.</div></div>
-          <div class="op haku">  <span class="op-wm">博</span><div class="op-id">KG-03</div><div class="op-name">Haku</div><div class="op-role">Deploy &amp; Doc</div><div class="op-line">Reads live artifacts, writes the spec, deploys and commits.</div></div>
-          <div class="op ryu">   <span class="op-wm">龍</span><div class="op-id">KG-04</div><div class="op-name">Ryū</div><div class="op-role">Night Runner</div><div class="op-line">Runs the overnight queue. Delivers a morning digest.</div></div>
-          <div class="op cho">   <span class="op-wm">聴</span><div class="op-id">KG-05</div><div class="op-name">Chō</div><div class="op-role">Meeting Listener</div><div class="op-line">Transcribes meetings locally. Nothing leaves the machine.</div></div>
-          <div class="op sumi">  <span class="op-wm">墨</span><div class="op-id">KG-06</div><div class="op-name">Sumi</div><div class="op-role">Record-Keeper</div><div class="op-line">Files each meeting into a durable, faithful record.</div></div>
-          <div class="op toshi"> <span class="op-wm">透</span><div class="op-id">THE EYE</div><div class="op-name">Tōshi</div><div class="op-role">Inspector · Recon</div><div class="op-line">Sees straight through a live system to document what's really there.</div></div>
-          <div class="op" style="--c:var(--text-dim); border-top-color:var(--border); display:flex; align-items:center; justify-content:center;">
-            <div style="text-align:center;"><div style="font-family:monospace; font-size:11px; color:var(--text-dim); letter-spacing:1px;">+ growing</div><div style="font-size:13px; color:var(--text-muted); margin-top:6px;">The crew grows<br>deliberately.</div></div>
-          </div>
+          <div class="op mei"  data-glyph="明"><div class="op-head"><span class="op-id">KG-01</span><span class="op-dot"></span></div><div class="op-glyph">明</div><div class="op-name">Mei</div><div class="op-role">Support · WebCenter</div><div class="op-meaning">"Bright" — clarity</div></div>
+          <div class="op ren"  data-glyph="錬"><div class="op-head"><span class="op-id">KG-02</span><span class="op-dot"></span></div><div class="op-glyph">錬</div><div class="op-name">Ren</div><div class="op-role">Builder · Scripts</div><div class="op-meaning">"Tempered" — refined</div></div>
+          <div class="op haku" data-glyph="博"><div class="op-head"><span class="op-id">KG-03</span><span class="op-dot"></span></div><div class="op-glyph">博</div><div class="op-name">Haku</div><div class="op-role">Deploy &amp; Doc</div><div class="op-meaning">"Jewel-sound" — precision</div></div>
+          <div class="op ryu"  data-glyph="龍"><div class="op-head"><span class="op-id">KG-04</span><span class="op-dot"></span></div><div class="op-glyph">龍</div><div class="op-name">Ryū</div><div class="op-role">Night Runner</div><div class="op-meaning">"Dragon" — tireless</div></div>
+          <div class="op cho"  data-glyph="聴"><div class="op-head"><span class="op-id">KG-05</span><span class="op-dot"></span></div><div class="op-glyph">聴</div><div class="op-name">Chō</div><div class="op-role">Meeting Listener</div><div class="op-meaning">"To listen" — present</div></div>
+          <div class="op sumi" data-glyph="墨"><div class="op-head"><span class="op-id">KG-06</span><span class="op-dot"></span></div><div class="op-glyph">墨</div><div class="op-name">Sumi</div><div class="op-role">Record-Keeper</div><div class="op-meaning">"Ink" — permanent</div></div>
+          <div class="op toshi" data-glyph="透"><div class="op-head"><span class="op-id">THE EYE</span><span class="op-dot"></span></div><div class="op-glyph">透</div><div class="op-name">Tōshi</div><div class="op-role">Inspector · Recon</div><div class="op-meaning">"See through" — clairvoyance</div></div>
+          <div class="op grow"><div style="text-align:center;"><div style="font-family:monospace; font-size:11px; color:var(--text-dim); letter-spacing:2px;">+ GROWING</div><div style="font-size:13px; color:var(--text-muted); margin-top:8px;">The crew grows<br>deliberately.</div></div></div>
         </div>
       </div>
     </section>
@@ -587,13 +632,13 @@
         <div class="stats stagger">
           <div class="stat"><div class="num">190+</div><div class="cap">WebCenter operations exposed as live tools</div></div>
           <div class="stat"><div class="num crim">0</div><div class="cap">copy-paste steps to deploy a script</div></div>
-          <div class="stat"><div class="num">3</div><div class="cap">systems wired in — WebCenter, Miro, DevOps</div></div>
+          <div class="stat"><div class="num">2</div><div class="cap">systems wired in — WebCenter &amp; Miro</div></div>
           <div class="stat"><div class="num crim">24/7</div><div class="cap">available — including while you sleep</div></div>
         </div>
         <div class="flist stagger">
           <div class="frow"><span class="fm">▸</span><span class="ft">Read &amp; update <b>live WebCenter</b> — projects, attributes, workflows, scripts.</span></div>
           <div class="frow"><span class="fm">▸</span><span class="ft">Drive the browser to <b>deploy a script straight into WebCenter</b> — the same clicks, automated.</span></div>
-          <div class="frow"><span class="fm">▸</span><span class="ft">Draw a <b>Miro process diagram</b> and publish a <b>DevOps-ready spec</b> as the build happens.</span></div>
+          <div class="frow"><span class="fm">▸</span><span class="ft">Draw a <b>Miro process diagram</b> and write a <b>clean, shareable spec</b> as the build happens.</span></div>
         </div>
       </div>
     </section>
@@ -606,9 +651,9 @@
         <h2 class="head stagger">It runs while you sleep<span class="jp-tag">夜行</span></h2>
         <p class="lead stagger">Ryū, the Night Runner, takes the queue overnight — unattended, on a schedule, inside a strict token budget.</p>
         <div class="grid g3 stagger">
-          <div class="card"><span class="ico">🕐</span><h3>Scheduled</h3><p>Kicks off on its own at a set hour. No one sitting in a chat window.</p></div>
-          <div class="card"><span class="ico">⚖️</span><h3>Budgeted</h3><p>Respects a hard token cap per operative and per day — spend stays predictable.</p></div>
-          <div class="card"><span class="ico">📋</span><h3>Accountable</h3><p>Every run lands as a tracked task with a morning digest of exactly what happened.</p></div>
+          <div class="card"><span class="kanji-ico" style="color:var(--amber)">時</span><h3>Scheduled</h3><p>Kicks off on its own at a set hour. No one sitting in a chat window.</p></div>
+          <div class="card"><span class="kanji-ico" style="color:var(--amber)">限</span><h3>Budgeted</h3><p>Respects a hard token cap per operative and per day — spend stays predictable.</p></div>
+          <div class="card"><span class="kanji-ico" style="color:var(--amber)">録</span><h3>Accountable</h3><p>Every run lands as a tracked task with a morning digest of exactly what happened.</p></div>
         </div>
         <p class="lead stagger" style="margin-top:24px;">Load the queue before you leave. <span class="hi">Wake up to work that's already done.</span></p>
       </div>
@@ -620,9 +665,15 @@
         <div class="kicker stagger">Private by design</div>
         <h2 class="head stagger">The sensitive part <span class="crim">never leaves the machine</span></h2>
         <p class="lead stagger">Chō listens to a meeting and transcribes it <span class="hi">locally</span> — no audio, no transcript, nothing sent to a cloud service. Sumi then files the result into a durable record.</p>
-        <div class="grid g2 stagger">
-          <div class="card"><span class="ico">🎧</span><h3>Chō — local transcription</h3><p>Speech-to-text runs on-device. Meeting audio never goes online. Out comes a structured summary: decisions, actions, open questions.</p></div>
-          <div class="card"><span class="ico">🖋️</span><h3>Sumi — durable record</h3><p>The summary is filed into a clean, faithful record that outlives the call. Factual by rule — never invents an attendee or a date.</p></div>
+        <div class="duo stagger">
+          <div class="opwide cho">
+            <div class="g">聴</div>
+            <div><div class="who">KG-05 · Chō · The Ear</div><h3>Local transcription</h3><p>Speech-to-text runs on-device. Meeting audio never goes online. Out comes a structured summary: decisions, actions, open questions.</p></div>
+          </div>
+          <div class="opwide sumi">
+            <div class="g">墨</div>
+            <div><div class="who">KG-06 · Sumi · The Ink</div><h3>Durable record</h3><p>The summary is filed into a clean, faithful record that outlives the call. Factual by rule — never invents an attendee or a date.</p></div>
+          </div>
         </div>
         <p class="lead stagger" style="margin-top:22px;">Be <span class="hi">present</span> in the room — not the note-taker.</p>
       </div>
@@ -639,7 +690,7 @@
           <div class="step-arrow">→</div>
           <div class="step"><div class="sn">02 · DEPLOY</div><div class="sh">Haku pushes it live</div><div class="sp">Browser automation deploys it straight into WebCenter — no manual paste, no missed step.</div></div>
           <div class="step-arrow">→</div>
-          <div class="step"><div class="sn">03 · DOCUMENT</div><div class="sh">A spec, automatically</div><div class="sp">Haku writes the functional spec and, for workflows, a Miro diagram — DevOps-ready.</div></div>
+          <div class="step"><div class="sn">03 · DOCUMENT</div><div class="sh">A spec, automatically</div><div class="sp">Haku writes the functional spec and, for workflows, a Miro diagram — clean and shareable.</div></div>
           <div class="step-arrow">→</div>
           <div class="step"><div class="sn">04 · COMMIT</div><div class="sh">Into the codebase</div><div class="sp">The artifact is committed and versioned. The repo and the live system stay in sync.</div></div>
         </div>
@@ -654,8 +705,8 @@
         <h2 class="head stagger">Grounded, <span class="crim">not guessed</span></h2>
         <p class="lead stagger">A general AI tool improvises from public docs. This one draws on a <span class="hi">real, accumulated body of WebCenter craft</span> — years of scripts, patterns, and solved edge cases.</p>
         <div class="grid g2 stagger">
-          <div class="card"><span class="ico">📚</span><h3>Built on real work</h3><p>When Mei answers or Ren builds, it's lifting from genuine, battle-tested solutions — not hallucinating from a manual.</p></div>
-          <div class="card"><span class="ico">🎯</span><h3>Purpose-built, not generic</h3><p>Each context — Dashboard, Rule Engine, Workflow node, SDK — has its own rules. The crew knows which is which.</p></div>
+          <div class="card"><span class="kanji-ico" style="color:var(--teal)">蓄</span><h3>Built on real work</h3><p>When Mei answers or Ren builds, it's lifting from genuine, battle-tested solutions — not hallucinating from a manual.</p></div>
+          <div class="card"><span class="kanji-ico" style="color:var(--teal)">専</span><h3>Purpose-built, not generic</h3><p>Each context — Dashboard, Rule Engine, Workflow node, SDK — has its own rules. The crew knows which is which.</p></div>
         </div>
         <p class="lead stagger" style="margin-top:22px;">The AI didn't replace the experience. It made years of it <span class="hi">instantly usable</span>.</p>
       </div>
@@ -672,7 +723,7 @@
           <div class="card pillar"><div class="pn">02 · EXECUTE</div><div class="pt">Operative build</div><p>Each item is dispatched to an operative, built, and returned for review. Overnight, the whole queue runs itself.</p></div>
           <div class="card pillar"><div class="pn">03 · DEPLOY</div><div class="pt">Live + versioned</div><p>Accepted work deploys into WebCenter, gets documented, and is committed. Full traceability.</p></div>
         </div>
-        <p class="lead stagger" style="margin-top:22px;">Think Azure DevOps — without the overhead. Your backlog is run by AI, your build pipeline is <span class="hi">Ren</span>, your overnight CI is <span class="hi">Ryū</span>.</p>
+        <p class="lead stagger" style="margin-top:22px;">A backlog, executed by the crew — without the overhead. Your build pipeline is <span class="hi">Ren</span>, your overnight CI is <span class="hi">Ryū</span>, and every result is documented and versioned.</p>
       </div>
     </section>
 
@@ -680,16 +731,36 @@
     <section class="slide">
       <div class="slide-inner">
         <div class="kicker stagger">The release plan</div>
-        <h2 class="head stagger">It grows deliberately<span class="jp-tag">ロードマップ</span></h2>
-        <p class="lead stagger">Not finished — a living system. Each version deepens an operative or adds a new one. One step at a time.</p>
-        <div class="road stagger">
-          <div class="rrow"><span class="rv">now</span><span class="rt">The crew of six<span class="rtag now">live</span></span><span class="rd">Mei, Ren, Haku, Ryū, Chō, Sumi — running daily.</span></div>
-          <div class="rrow"><span class="rv">v0.1</span><span class="rt">Studio foundation<span class="rtag next">next</span></span><span class="rd">Work-item board, status tracking, the build surface.</span></div>
-          <div class="rrow"><span class="rv">v0.3</span><span class="rt">Operative execution<span class="rtag plan">planned</span></span><span class="rd">Dispatch → build → review → deploy in one flow.</span></div>
-          <div class="rrow"><span class="rv">v0.4</span><span class="rt">Overnight builds<span class="rtag plan">planned</span></span><span class="rd">Ryū runs the whole queue while you sleep.</span></div>
-          <div class="rrow"><span class="rv">v0.5</span><span class="rt">Colleague access<span class="rtag plan">horizon</span></span><span class="rd">Shared pool or your own key, per-user caps — beyond one person.</span></div>
+        <h2 class="head stagger">Not a prototype — <span class="accent">twelve releases deep</span><span class="jp-tag">ロードマップ</span></h2>
+        <p class="lead stagger">A year of real, shipped capability — and a clear path forward. The crew grows deliberately, never all at once.</p>
+        <div class="road-wrap stagger">
+          <div>
+            <div class="road-col-head"><span class="lbl" style="color:var(--green)">Shipped</span><span class="cnt">v0.1 → v0.6.10 · running daily</span></div>
+            <div class="ship-grid">
+              <div class="ship"><span class="sv">v0.1</span><span class="st">Foundation — the operative dashboard</span></div>
+              <div class="ship"><span class="sv">v0.2</span><span class="st">Real data layer + token budget</span></div>
+              <div class="ship"><span class="sv">v0.3</span><span class="st">Crew Chat — CLI operative intelligence</span></div>
+              <div class="ship"><span class="sv">v0.4</span><span class="st">Night Operations — Ryū infrastructure</span></div>
+              <div class="ship"><span class="sv">v0.4.1</span><span class="st">Live in-app roadmap</span></div>
+              <div class="ship"><span class="sv">v0.5</span><span class="st">Ryū — real overnight missions</span></div>
+              <div class="ship"><span class="sv">v0.6</span><span class="st">Haku — Playwright documentation</span></div>
+              <div class="ship"><span class="sv">v0.6.1</span><span class="st">Dashboard script auto-sync</span></div>
+              <div class="ship"><span class="sv">v0.6.3</span><span class="st">Ren — git auto-push</span></div>
+              <div class="ship"><span class="sv">v0.6.4</span><span class="st">Chō — local meeting listener</span></div>
+              <div class="ship"><span class="sv">v0.6.9</span><span class="st">Tōshi — live system inspector</span></div>
+              <div class="ship"><span class="sv">v0.6.10</span><span class="st">Back-to-back capture + silence cutoff</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="road-col-head"><span class="lbl" style="color:var(--teal)">On the horizon</span></div>
+            <div class="next-list">
+              <div class="nrow next"><div class="nv">NEXT</div><div class="nt">Kage-gumi Studio</div><div class="nd">Projects designed as work items, built by operatives, deployed in one motion.</div></div>
+              <div class="nrow plan"><div class="nv">PLANNED</div><div class="nt">伝書 Densho</div><div class="nd">The crew's reusable craft — owned, searchable, growing with every build.</div></div>
+              <div class="nrow horizon"><div class="nv">HORIZON</div><div class="nt">Colleague access</div><div class="nd">Shared pool or your own key, per-user caps — beyond one person.</div></div>
+            </div>
+          </div>
         </div>
-        <div style="font-family:monospace; font-size:10px; color:var(--text-dim); margin-top:18px;">Last updated: 2026-06-11</div>
+        <div style="font-family:monospace; font-size:10px; color:var(--text-dim); margin-top:16px;">Last updated: 2026-06-11</div>
       </div>
     </section>
 
