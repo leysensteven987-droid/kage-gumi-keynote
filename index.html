@@ -938,7 +938,9 @@
   // non-interactive empty areas, so document-level click can't catch the tap).
   var opBackdrop = document.createElement('div');
   opBackdrop.className = 'op-backdrop';
-  document.body.appendChild(opBackdrop);
+  // append INSIDE the deck — the deck is its own stacking context (z-index:1),
+  // so the backdrop must live there too, otherwise it paints over the popover.
+  (document.getElementById('deck') || document.body).appendChild(opBackdrop);
 
   function closeOpenOps() {
     var open = document.querySelectorAll('.op.op-open');
