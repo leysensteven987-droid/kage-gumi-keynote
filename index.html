@@ -303,24 +303,26 @@
 
   /* ── crew roster — glyph-forward operative cards ── */
   .roster { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 22px; }
-  .op {
-    --c: var(--op-mei); --c-soft: rgba(0,255,224,0.15);
+  .op { --c: var(--op-mei); --c-soft: rgba(0,255,224,0.15); position: relative; }
+  .op-face {
     position: relative; overflow: hidden; isolation: isolate; text-align: center;
+    height: 100%; min-height: 150px;
     border: 1px solid var(--border); border-radius: 14px; padding: 15px 14px 16px;
     background:
       radial-gradient(120% 70% at 50% -10%, var(--c-soft) 0%, transparent 55%),
       linear-gradient(180deg, #15231f 0%, #0d1815 100%);
     transition: border-color .25s, box-shadow .25s;
   }
-  .op::after {   /* glowing accent strip along the top edge */
+  .op-face::after {   /* glowing accent strip along the top edge */
     content: ''; position: absolute; top: 0; left: 14px; right: 14px; height: 2px;
     background: var(--c); box-shadow: 0 0 16px 1px var(--c); border-radius: 0 0 2px 2px;
   }
-  .op::before {  /* faint oversized kanji echo behind the bright glyph */
+  .op-face::before {  /* faint oversized kanji echo behind the bright glyph */
     content: attr(data-glyph); position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
     font-family: 'Noto Serif JP', serif; font-weight: 700; font-size: 124px; line-height: 1;
     color: var(--c); opacity: 0.07; pointer-events: none; z-index: -1;
   }
+  .op:hover .op-face { border-color: var(--c); box-shadow: 0 0 0 1px var(--c), 0 10px 26px rgba(0,0,0,0.4); }
   .op .op-head { display: flex; align-items: center; justify-content: space-between; }
   .op .op-id { font-family: monospace; font-size: 10px; letter-spacing: .24em; color: var(--c); }
   .op .op-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px 1px var(--c); }
@@ -336,9 +338,33 @@
   .op.cho  {--c:var(--op-cho);  --c-soft:rgba(56,189,248,0.16)}
   .op.sumi {--c:var(--op-sumi); --c-soft:rgba(154,168,181,0.14)}
   .op.toshi{--c:var(--op-toshi);--c-soft:rgba(143,217,255,0.16)}
-  .op.grow { --c: var(--text-dim); background: var(--bg-card); border-style: dashed;
-             display: flex; align-items: center; justify-content: center; }
-  .op.grow::after, .op.grow::before { display: none; }
+  .op.grow { --c: var(--text-dim); }
+  .op.grow .op-face { border-style: dashed; background: var(--bg-card);
+                      display: flex; align-items: center; justify-content: center; }
+  .op.grow .op-face::after, .op.grow .op-face::before { display: none; }
+
+  /* hover popover — the full operative narrative */
+  .op-pop {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%) scale(.96);
+    width: 320px; max-width: 88vw;
+    border: 1px solid var(--c); border-radius: 14px;
+    background: linear-gradient(180deg, #16241f 0%, #0b1613 100%);
+    box-shadow: 0 0 0 1px var(--c-soft), 0 22px 50px rgba(0,0,0,0.65);
+    padding: 15px 18px 16px; text-align: left;
+    opacity: 0; pointer-events: none; z-index: 20;
+    transition: opacity .22s ease, transform .22s ease;
+  }
+  .op-pop-head { display: flex; align-items: center; gap: 13px; padding-bottom: 11px; margin-bottom: 11px;
+                 border-bottom: 1px solid var(--border-sub); }
+  .op-pop-head .pg { font-family: 'Noto Serif JP', serif; font-weight: 700; font-size: 34px; line-height: 1;
+                     color: var(--c); text-shadow: 0 0 16px var(--c); }
+  .op-pop-head .nm { font-family: 'Noto Serif JP', serif; font-size: 21px; font-weight: 700; color: #eef7f4; line-height: 1; }
+  .op-pop-head .rl { font-family: monospace; font-size: 9.5px; font-weight: 600; letter-spacing: .14em;
+                     text-transform: uppercase; color: var(--c); margin-top: 5px; }
+  .op-pop p { font-size: 12px; color: var(--text-sec); line-height: 1.55; font-weight: 300; }
+  .op-pop .jp { font-family: 'Noto Serif JP', serif; }
+  .op:hover { z-index: 50; }
+  .op:hover .op-pop { opacity: 1; transform: translate(-50%,-50%) scale(1); pointer-events: auto; }
 
   /* ── operative duo (Chō / Sumi spotlight) ── */
   .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 26px; }
@@ -556,14 +582,35 @@
         <div class="kicker stagger">The operatives</div>
         <h2 class="head stagger">Meet the crew<span class="jp-tag">影組メンバー</span></h2>
         <div class="roster stagger">
-          <div class="op mei"  data-glyph="明"><div class="op-head"><span class="op-id">KG-01</span><span class="op-dot"></span></div><div class="op-glyph">明</div><div class="op-name">Mei</div><div class="op-role">Support · WebCenter</div><div class="op-meaning">"Bright" — clarity</div></div>
-          <div class="op ren"  data-glyph="錬"><div class="op-head"><span class="op-id">KG-02</span><span class="op-dot"></span></div><div class="op-glyph">錬</div><div class="op-name">Ren</div><div class="op-role">Builder · Scripts</div><div class="op-meaning">"Tempered" — refined</div></div>
-          <div class="op haku" data-glyph="博"><div class="op-head"><span class="op-id">KG-03</span><span class="op-dot"></span></div><div class="op-glyph">博</div><div class="op-name">Haku</div><div class="op-role">Deploy &amp; Doc</div><div class="op-meaning">"Jewel-sound" — precision</div></div>
-          <div class="op ryu"  data-glyph="龍"><div class="op-head"><span class="op-id">KG-04</span><span class="op-dot"></span></div><div class="op-glyph">龍</div><div class="op-name">Ryū</div><div class="op-role">Night Runner</div><div class="op-meaning">"Dragon" — tireless</div></div>
-          <div class="op cho"  data-glyph="聴"><div class="op-head"><span class="op-id">KG-05</span><span class="op-dot"></span></div><div class="op-glyph">聴</div><div class="op-name">Chō</div><div class="op-role">Meeting Listener</div><div class="op-meaning">"To listen" — present</div></div>
-          <div class="op sumi" data-glyph="墨"><div class="op-head"><span class="op-id">KG-06</span><span class="op-dot"></span></div><div class="op-glyph">墨</div><div class="op-name">Sumi</div><div class="op-role">Record-Keeper</div><div class="op-meaning">"Ink" — permanent</div></div>
-          <div class="op toshi" data-glyph="透"><div class="op-head"><span class="op-id">THE EYE</span><span class="op-dot"></span></div><div class="op-glyph">透</div><div class="op-name">Tōshi</div><div class="op-role">Inspector · Recon</div><div class="op-meaning">"See through" — clairvoyance</div></div>
-          <div class="op grow"><div style="text-align:center;"><div style="font-family:monospace; font-size:11px; color:var(--text-dim); letter-spacing:2px;">+ GROWING</div><div style="font-size:13px; color:var(--text-muted); margin-top:8px;">The crew grows<br>deliberately.</div></div></div>
+          <div class="op mei">
+            <div class="op-face" data-glyph="明"><div class="op-head"><span class="op-id">KG-01</span><span class="op-dot"></span></div><div class="op-glyph">明</div><div class="op-name">Mei</div><div class="op-role">Support · WebCenter</div><div class="op-meaning">"Bright" — clarity</div></div>
+            <div class="op-pop"><div class="op-pop-head"><span class="pg">明</span><div><div class="nm">Mei</div><div class="rl">KG-01 · Support Agent</div></div></div><p>Knows the full WebCenter SDK: every JSP endpoint, every attribute, every error pattern. Ask in plain language, get working answers. Mei prepares the ground before anything else happens.</p></div>
+          </div>
+          <div class="op ren">
+            <div class="op-face" data-glyph="錬"><div class="op-head"><span class="op-id">KG-02</span><span class="op-dot"></span></div><div class="op-glyph">錬</div><div class="op-name">Ren</div><div class="op-role">Builder · Scripts</div><div class="op-meaning">"Tempered" — refined</div></div>
+            <div class="op-pop"><div class="op-pop-head"><span class="pg">錬</span><div><div class="nm">Ren</div><div class="rl">KG-02 · Builder</div></div></div><p>Built around WebCenter — Workflow, Rule Engine and Dashboard scripts, plus integration and migration specs and Workato recipes &amp; diagrams. Each context has its own rules, and Ren knows them all. He doesn't stop at writing the code: he uploads scripts straight into WebCenter himself, no copy-paste step. Saved, versioned, diffable. Tempered by the work — refined until it holds.</p></div>
+          </div>
+          <div class="op haku">
+            <div class="op-face" data-glyph="博"><div class="op-head"><span class="op-id">KG-03</span><span class="op-dot"></span></div><div class="op-glyph">博</div><div class="op-name">Haku</div><div class="op-role">Deploy &amp; Doc</div><div class="op-meaning">"Jewel-sound" — precision</div></div>
+            <div class="op-pop"><div class="op-pop-head"><span class="pg">博</span><div><div class="nm">Haku</div><div class="rl">KG-03 · Deploy &amp; Doc</div></div></div><p>Turns messy work into clean documentation, then pushes the work itself live. After Ren builds something, Haku writes it up — what it does, what it touches, how to use it — and deploys scripts straight into WebCenter via Playwright. Searchable, shareable, stored. The inspector's eye she first opened, <span class="jp">透視</span> Tōshi, has since grown into an operative of her own.</p></div>
+          </div>
+          <div class="op ryu">
+            <div class="op-face" data-glyph="龍"><div class="op-head"><span class="op-id">KG-04</span><span class="op-dot"></span></div><div class="op-glyph">龍</div><div class="op-name">Ryū</div><div class="op-role">Night Runner</div><div class="op-meaning">"Dragon" — tireless</div></div>
+            <div class="op-pop"><div class="op-pop-head"><span class="pg">龍</span><div><div class="nm">Ryū</div><div class="rl">KG-04 · Night Runner</div></div></div><p>Runs scheduled tasks while I sleep. Surfaces his own proposals for the next run, queues scripts for review, and delivers a morning digest. Launch a proposal and it becomes a real, tracked dashboard task. Dragons don't rest. Neither does Ryū.</p></div>
+          </div>
+          <div class="op cho">
+            <div class="op-face" data-glyph="聴"><div class="op-head"><span class="op-id">KG-05</span><span class="op-dot"></span></div><div class="op-glyph">聴</div><div class="op-name">Chō</div><div class="op-role">Meeting Listener</div><div class="op-meaning">"To listen" — present</div></div>
+            <div class="op-pop"><div class="op-pop-head"><span class="pg">聴</span><div><div class="nm">Chō</div><div class="rl">KG-05 · Meeting Listener</div></div></div><p>Sits in the shadows of a call and listens. Captures the audio, transcribes it on-device with faster-whisper — nothing ever leaves the machine — and hands back a clean summary: decisions, action items, open questions. A meeting stops being something you re-type from memory and becomes reusable text that feeds back into project work.</p></div>
+          </div>
+          <div class="op sumi">
+            <div class="op-face" data-glyph="墨"><div class="op-head"><span class="op-id">KG-06</span><span class="op-dot"></span></div><div class="op-glyph">墨</div><div class="op-name">Sumi</div><div class="op-role">Record-Keeper</div><div class="op-meaning">"Ink" — permanent</div></div>
+            <div class="op-pop"><div class="op-pop-head"><span class="pg">墨</span><div><div class="nm">Sumi</div><div class="rl">KG-06 · Record-Keeper</div></div></div><p>The ear hears; the ink keeps. After Chō summarises a meeting, Sumi files it into a durable, per-customer record — a clean dossier that outlives the call. Tag a meeting to a customer and it's archived for good. Faithful, factual, never invents an attendee or a date.</p></div>
+          </div>
+          <div class="op toshi">
+            <div class="op-face" data-glyph="透"><div class="op-head"><span class="op-id">THE EYE</span><span class="op-dot"></span></div><div class="op-glyph">透</div><div class="op-name">Tōshi</div><div class="op-role">Inspector · Recon</div><div class="op-meaning">"See through" — clairvoyance</div></div>
+            <div class="op-pop"><div class="op-pop-head"><span class="pg">透</span><div><div class="nm">Tōshi</div><div class="rl">THE EYE · The Seer</div></div></div><p>Where the others build and deploy, Tōshi reveals. She X-rays any WebCenter — dashboard topology, page inventory, the wiring and hidden structure nobody wrote down — and hands back a map of what's really there. Every build starts by seeing the ground first, so Tōshi is never idle. The shadow that reads the blueprint behind the glass.</p></div>
+          </div>
+          <div class="op grow"><div class="op-face"><div style="text-align:center;"><div style="font-family:monospace; font-size:11px; color:var(--text-dim); letter-spacing:2px;">+ GROWING</div><div style="font-size:13px; color:var(--text-muted); margin-top:8px;">The crew grows<br>deliberately.</div></div></div></div>
         </div>
       </div>
     </section>
