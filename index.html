@@ -363,12 +363,24 @@
                      text-transform: uppercase; color: var(--c); margin-top: 5px; }
   .op-pop p { font-size: 12px; color: var(--text-sec); line-height: 1.55; font-weight: 300; }
   .op-pop .jp { font-family: 'Noto Serif JP', serif; }
-  .op:hover, .op.op-open { z-index: 50; }
-  .op:hover .op-pop,
-  .op.op-open .op-pop { opacity: 1; transform: translate(-50%,-50%) scale(1); pointer-events: auto; }
-  /* real tap-away backdrop (mobile only — desktop uses hover/anchored popover) */
-  .op-backdrop { position: fixed; inset: 0; z-index: 1550; background: rgba(6,12,11,0.66);
-                 opacity: 0; pointer-events: none; transition: opacity .2s ease; cursor: pointer; display: none; }
+  .op:hover { z-index: 50; }
+  .op:hover .op-pop { opacity: 1; transform: translate(-50%,-50%) scale(1); pointer-events: auto; }
+
+  /* mobile tap → narrative in a body-level modal. A direct <body> child sits
+     outside every scroll/transform container, so iOS can't trap it in a slide
+     layer (the bug that kept dimming the text). This is the robust path. */
+  .op-modal { position: fixed; inset: 0; z-index: 3000; display: none;
+              align-items: center; justify-content: center; padding: 24px;
+              background: rgba(6,12,11,0.76); cursor: pointer;
+              -webkit-tap-highlight-color: transparent; }
+  .op-modal.show { display: flex; }
+  .op-modal .op-pop {
+    display: block; position: static; inset: auto; left: auto; top: auto;
+    transform: none; opacity: 1; pointer-events: auto; cursor: auto;
+    width: min(360px, 92vw); max-height: 80vh; overflow-y: auto; z-index: auto;
+    box-shadow: 0 0 0 1px var(--c), 0 22px 50px rgba(0,0,0,0.7);
+    animation: rise .25s ease;
+  }
 
   /* ── operative duo (Chō / Sumi spotlight) ── */
   .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 26px; }
@@ -577,13 +589,8 @@
     .op .op-role { font-size: 9px; letter-spacing: .12em; }
     .op .op-meaning { font-size: 10px; }
     .op-face::before { font-size: 116px; }
-    /* tap-to-toggle narrative → centred overlay with a dim backdrop */
-    .op-pop { position: fixed; width: min(360px, 90vw); max-height: 78vh; overflow-y: auto; z-index: 1600; }
-    .op.op-open { z-index: 1600; }
-    .op.op-open .op-pop { box-shadow: 0 0 0 1px var(--c), 0 22px 50px rgba(0,0,0,0.65); }
-    .op-face { cursor: pointer; }
-    .op-backdrop { display: block; }
-    .op-backdrop.show { opacity: 1; pointer-events: auto; }
+    .op-face { cursor: pointer; }              /* tappable affordance */
+    .op .op-pop { display: none; }             /* anchored popover off — the modal handles mobile */
 
     /* Chō / Sumi spotlight */
     .opwide { padding: 18px; gap: 15px; } .opwide .g { font-size: 58px; }
@@ -934,23 +941,29 @@
 
   function pad(n) { return (n < 10 ? '0' : '') + n; }
 
-  // tap-away backdrop for mobile (a real element — iOS doesn't fire click on
-  // non-interactive empty areas, so document-level click can't catch the tap).
-  var opBackdrop = document.createElement('div');
-  opBackdrop.className = 'op-backdrop';
-  document.body.appendChild(opBackdrop);
-  // NOTE: on open the backdrop is moved INTO the active card, so it shares the
-  // card's stacking context with the popover. iOS Safari traps position:fixed
-  // inside an overflow:auto scroll container (our slides) in that container's
-  // layer — co-locating backdrop + popover in the same card is the only z-order
-  // that holds across browsers (backdrop z1550 < popover z1600 within the card).
+  // Mobile crew narrative → a body-level modal. The popover that lives inside a
+  // card is position:fixed inside the overflow:auto slide; iOS Safari traps that
+  // in the slide's layer and paints the dim over it. A modal appended straight to
+  // <body> (no scroll/transform ancestor) is the one arrangement iOS can't break.
+  var opModal = document.createElement('div');
+  opModal.className = 'op-modal';
+  document.body.appendChild(opModal);
+  var mqTap = window.matchMedia('(max-width: 680px)');
 
-  function closeOpenOps() {
-    var open = document.querySelectorAll('.op.op-open');
-    for (var i = 0; i < open.length; i++) open[i].classList.remove('op-open');
-    opBackdrop.classList.remove('show');
+  function closeModal() { opModal.classList.remove('show'); opModal.innerHTML = ''; }
+
+  function openModal(card) {
+    var pop = card.querySelector('.op-pop');
+    if (!pop) return;
+    var c = (getComputedStyle(card).getPropertyValue('--c') || '').trim();
+    opModal.style.setProperty('--c', c || '#00ffe0');
+    opModal.innerHTML = '';
+    opModal.appendChild(pop.cloneNode(true));   // carry the styled narrative in
+    opModal.classList.add('show');
   }
-  opBackdrop.addEventListener('click', closeOpenOps);
+
+  // tap the dim (the modal backdrop itself) to dismiss; taps on the card don't
+  opModal.addEventListener('click', function (e) { if (e.target === opModal) closeModal(); });
 
   function render() {
     slides.forEach(function (s, i) { s.classList.toggle('active', i === cur); });
@@ -958,21 +971,15 @@
     pfill.style.width = ((cur + 1) / total * 100) + '%';
     prevBtn.classList.toggle('disabled', cur === 0);
     nextBtn.classList.toggle('disabled', cur === total - 1);
-    closeOpenOps();   // changing slides dismisses any open narrative
+    closeModal();   // changing slides dismisses any open narrative
     if (history.replaceState) history.replaceState(null, '', '#' + (cur + 1));
   }
 
-  // crew cards: tap to toggle the narrative (touch has no hover).
-  // tap a card to open; tap it again, tap another card, or tap away to close.
+  // crew cards: tap to open the narrative modal (touch has no hover; desktop hovers).
   document.addEventListener('click', function (e) {
+    if (!mqTap.matches) return;                        // desktop uses hover
     var card = e.target.closest ? e.target.closest('.op') : null;
-    var wasOpen = card && card.classList.contains('op-open');
-    closeOpenOps();
-    if (card && !wasOpen && card.querySelector('.op-pop')) {
-      card.appendChild(opBackdrop);   // co-locate in this card's stacking context
-      card.classList.add('op-open');
-      opBackdrop.classList.add('show');
-    }
+    if (card && card.querySelector('.op-pop')) openModal(card);
   });
 
   function go(n) {
