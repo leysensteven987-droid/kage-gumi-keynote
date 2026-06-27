@@ -611,27 +611,78 @@
   }
 </style>
 <!-- KG analytics beacon - silent, no cookies, no gate. One hit per load to the KG
-     Cloudflare Worker; the KG box polls /export and renders the ANALYTICS view.
-     Attribution: ?v=<name> named links + referrer + Cloudflare edge geo. -->
+     Cloudflare Worker, plus an engagement beacon (dwell + slide depth) on
+     tab-hide / unload. The KG box polls /export and renders the ANALYTICS view.
+     Attribution: ?v=<name> named links + referrer + Cloudflare edge org/geo.
+     This is a slide deck, so depth = furthest slide reached; the slide IIFE at
+     the bottom calls window.__kgReportSlide(idx, total) on every slide change. -->
 <script>
 (function () {
-  var KG_BEACON = { endpoint: "https://kage-gate.kage-gumi.workers.dev/hit", deck: "keynote" };
-  try {
-    var payload = JSON.stringify({
-      deck: KG_BEACON.deck,
-      v: (new URLSearchParams(location.search).get("v") || ""),
-      referrer: document.referrer || "",
-      path: location.pathname
+  var BASE = "https://kage-gate.kage-gumi.workers.dev";
+  var DECK = "keynote";
+  // session id joins this view's hit to its engagement row (sid)
+  var sid = (function () {
+    try { if (crypto && crypto.randomUUID) return crypto.randomUUID(); } catch (e) {}
+    return "s-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+  })();
+
+  function send(path, obj) {
+    try {
+      var payload = JSON.stringify(obj);
+      var sent = false;
+      // text/plain Blob via sendBeacon avoids a CORS preflight; fetch keepalive is the fallback.
+      if (navigator.sendBeacon) {
+        try { sent = navigator.sendBeacon(BASE + path, new Blob([payload], { type: "text/plain" })); } catch (e) {}
+      }
+      if (!sent) {
+        fetch(BASE + path, { method: "POST", keepalive: true, body: payload }).catch(function () {});
+      }
+    } catch (e) {}
+  }
+
+  // load hit (now carries sid so engagement can be joined to the view)
+  send("/hit", {
+    deck: DECK,
+    v: (new URLSearchParams(location.search).get("v") || ""),
+    referrer: document.referrer || "",
+    path: location.pathname,
+    sid: sid
+  });
+
+  // --- engagement: foreground dwell + slide depth ----------------------
+  var dwellMs = 0;            // accumulated active (foreground) ms
+  var segStart = (document.visibilityState === "hidden") ? 0 : Date.now();
+  var maxSlide = 0;          // furthest slide index reached
+  var totalSlides = 1;       // updated from the deck's real slide count
+
+  function accrue() { if (segStart) { dwellMs += Date.now() - segStart; segStart = 0; } }
+
+  // the slide IIFE at the bottom calls this on every slide change
+  window.__kgReportSlide = function (idx, total) {
+    if (typeof total === "number" && total > 0) totalSlides = total;
+    if (typeof idx === "number" && idx > maxSlide) maxSlide = idx;
+  };
+
+  function sendEng() {
+    accrue();
+    var denom = Math.max(1, totalSlides - 1);
+    var depth = Math.min(100, Math.round(maxSlide / denom * 100));
+    send("/eng", {
+      sid: sid,
+      deck: DECK,
+      dwellMs: dwellMs,
+      depth: depth,
+      depthKind: "slide",
+      maxSlide: maxSlide,
+      totalSlides: totalSlides
     });
-    // text/plain Blob via sendBeacon avoids a CORS preflight; fetch keepalive is the fallback.
-    var sent = false;
-    if (navigator.sendBeacon) {
-      try { sent = navigator.sendBeacon(KG_BEACON.endpoint, new Blob([payload], { type: "text/plain" })); } catch (e) {}
-    }
-    if (!sent) {
-      fetch(KG_BEACON.endpoint, { method: "POST", keepalive: true, body: payload }).catch(function () {});
-    }
-  } catch (e) {}
+  }
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden") { accrue(); sendEng(); }
+    else if (!segStart) { segStart = Date.now(); }   // resume the dwell timer
+  });
+  window.addEventListener("pagehide", sendEng);
 })();
 </script>
 </head>
@@ -992,6 +1043,8 @@
     nextBtn.classList.toggle('disabled', cur === total - 1);
     closeModal();   // changing slides dismisses any open narrative
     if (history.replaceState) history.replaceState(null, '', '#' + (cur + 1));
+    // analytics: report furthest slide reached for engagement depth
+    if (window.__kgReportSlide) window.__kgReportSlide(cur, total);
   }
 
   // crew cards: tap to open the narrative modal (touch has no hover; desktop hovers).
